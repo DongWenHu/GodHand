@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">GodHandMator</string>
+    <string name="ime_name">godhand输入法</string>
 </resources>

@@ -1,11 +1,23 @@
 package com.rzx.godhandmator;
 
+import android.content.Context;
+import android.inputmethodservice.InputMethodService;
+import android.os.IBinder;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
-import android.support.test.uiautomator.UiObject2;
+import android.support.test.uiautomator.UiObject;
+import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiSelector;
+import android.support.test.uiautomator.Until;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.view.inputmethod.InputMethod;
+import android.view.inputmethod.InputMethodManager;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 
@@ -13,12 +25,14 @@ import java.io.IOException;
  * Created by Administrator on 2016/7/24/024.
  */
 public class AutomatorApi {
+    private static final String TAG = "AutomatorApi";
     /**
      * UiDevice provides access to state information about the device.
      * You can also use this class to simulate user actions on the device,
      * such as pressing the d-pad or pressing the Home and Menu buttons.
      */
     public static UiDevice uiDevice = null;
+    public static Context context = null;
 
     /**
      * Set init UiDevice
@@ -26,6 +40,13 @@ public class AutomatorApi {
      */
     public static void setUiDevice(UiDevice dev){
         uiDevice = dev;
+    }
+
+    /**
+     * @param con
+     */
+    public static void setContext(Context con){
+        context = con;
     }
 
 
@@ -84,11 +105,11 @@ public class AutomatorApi {
      * @return true if successful, else return false
      * @since API Level 16
      */
-    public static Boolean pressKeyCode(Integer keyCode) {
+    public static Boolean pressKeyCode(int keyCode) {
         if(uiDevice == null)
             return false;
 
-        return uiDevice.pressKeyCode(keyCode.intValue());
+        return uiDevice.pressKeyCode(keyCode);
     }
 
     /**
@@ -125,11 +146,11 @@ public class AutomatorApi {
      * @return true if the click succeeded else false
      * @since API Level 16
      */
-    public static Boolean click(Integer x, Integer y) {
+    public static Boolean click(int x, int y) {
         if(uiDevice == null)
             return false;
 
-        return uiDevice.click(x.intValue(), y.intValue());
+        return uiDevice.click(x, y);
     }
 
     /**
@@ -145,15 +166,15 @@ public class AutomatorApi {
      * @return false if the operation fails or the coordinates are invalid
      * @since API Level 16
      */
-    public static Boolean swipe(Integer startX, Integer startY, Integer endX, Integer endY, Integer steps) {
+    public static Boolean swipe(int startX, int startY, int endX, int endY, int steps) {
         if(uiDevice == null)
             return false;
 
-        return uiDevice.swipe(startX.intValue(),
-                startY.intValue(),
-                endX.intValue(),
-                endY.intValue(),
-                steps.intValue());
+        return uiDevice.swipe(startX,
+                startY,
+                endX,
+                endY,
+                steps);
     }
 
     /**
@@ -171,15 +192,15 @@ public class AutomatorApi {
      * or the coordinates are invalid
      * @since API Level 18
      */
-    public static Boolean drag(Integer startX, Integer startY, Integer endX, Integer endY, Integer steps) {
+    public static Boolean drag(int startX, int startY, int endX, int endY, int steps) {
         if(uiDevice == null)
             return false;
 
-        return uiDevice.drag(startX.intValue(),
-                startY.intValue(),
-                endX.intValue(),
-                endY.intValue(),
-                steps.intValue());
+        return uiDevice.drag(startX,
+                startY,
+                endX,
+                endY,
+                steps);
     }
 
     /**
@@ -222,27 +243,6 @@ public class AutomatorApi {
     }
 
     /**
-     * Waits for a window content update event to occur.
-     *
-     * If a package name for the window is specified, but the current window
-     * does not have the same package name, the function returns immediately.
-     *
-     * @param packageName the specified window package name (can be <code>null</code>).
-     *        If <code>null</code>, a window update from any front-end window will end the wait
-     * @param timeout the timeout for the wait
-     *
-     * @return true if a window update occurred, false if timeout has elapsed or if the current
-     *         window does not have the specified package name
-     * @since API Level 16
-     */
-    public static Boolean waitForWindowUpdate(String packageName, Long timeout) {
-        if(uiDevice == null)
-            return false;
-
-        return uiDevice.waitForWindowUpdate(packageName, timeout.longValue());
-    }
-
-    /**
      * Take a screenshot of current window and store it as PNG
      *
      * The screenshot is adjusted per screen rotation
@@ -253,11 +253,11 @@ public class AutomatorApi {
      * @return true if screen shot is created successfully, false otherwise
      * @since API Level 17
      */
-    public static Boolean takeScreenshot(File storePath, Float scale, Integer quality) {
+    public static Boolean takeScreenshot(File storePath, Float scale, int quality) {
         if(uiDevice == null)
             return false;
 
-        return uiDevice.takeScreenshot(storePath, scale.floatValue(), quality.intValue());
+        return uiDevice.takeScreenshot(storePath, scale.floatValue(), quality);
     }
 
     /**
@@ -288,7 +288,49 @@ public class AutomatorApi {
         if(uiDevice == null)
             return null;
 
-        return uiDevice.executeShellCommand(cmd);
+        int sdkVersion = android.os.Build.VERSION.SDK_INT;
+        if (sdkVersion >= 21) {
+            return uiDevice.executeShellCommand(cmd);
+        }
+
+        String result = "";
+        DataOutputStream dos = null;
+        DataInputStream dis = null;
+
+        try {
+            Process p = Runtime.getRuntime().exec("su");// 经过Root处理的android系统即有su命令
+            dos = new DataOutputStream(p.getOutputStream());
+            dis = new DataInputStream(p.getInputStream());
+
+            dos.writeBytes(cmd + "\n");
+            dos.flush();
+            dos.writeBytes("exit\n");
+            dos.flush();
+            String line = null;
+            while ((line = dis.readLine()) != null) {
+                Log.d("result", line);
+                result += line;
+            }
+            p.waitFor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (dis != null) {
+                try {
+                    dis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -300,7 +342,7 @@ public class AutomatorApi {
      * @throws RemoteException
      * @since API Level 16
      */
-    public static Boolean wakeUp() throws RemoteException {
+    public static Boolean screenOn() throws RemoteException {
         if(uiDevice == null)
             return false;
 
@@ -314,7 +356,7 @@ public class AutomatorApi {
      * @return true if successful, else return false
      * @throws RemoteException
      */
-    public static Boolean sleep() throws RemoteException {
+    public static Boolean screenOff() throws RemoteException {
         if(uiDevice == null)
             return false;
 
@@ -325,32 +367,15 @@ public class AutomatorApi {
     /**
      * Find object by text, and click the object if the object is clickable.
      * @param text
+     * @param index
      * @return true if successful, else return false
+     * @throws UiObjectNotFoundException
      */
-    public static Boolean clickByText(String text){
+    public static Boolean clickByText(String text, int index) throws UiObjectNotFoundException {
         if(uiDevice == null)
             return false;
 
-        UiObject2 object = uiDevice.findObject(By.text(text));
-        if(object == null)
-            return false;
-        object.click();
-        return true;
-    }
-
-    /**
-     * Find object by resource, and click the object if the object is clickable.
-     * @param resPackage
-     * @param resId
-     * @return
-     */
-    public static Boolean clickByRes(String resPackage, String resId){
-        if(uiDevice == null)
-            return false;
-
-        UiObject2 object = uiDevice.findObject(By.res(resPackage, resId));
-        if(object == null)
-            return false;
+        UiObject object = new UiObject(new UiSelector().textContains(text).instance(index));
         object.click();
         return true;
     }
@@ -361,42 +386,117 @@ public class AutomatorApi {
      * @param time
      * @return
      */
-    public static Boolean longClick(Integer x, Integer y, Integer time){
+    public static Boolean longClick(int x, int y, int time){
         if(uiDevice == null)
             return false;
 
-        return uiDevice.swipe(x, y, x, y, time.intValue()/5);
+        return uiDevice.swipe(x, y, x, y, time/5);
     }
 
     /**
      * @param text
+     * @param index
      * @return
+     * @throws UiObjectNotFoundException
      */
-    public static Boolean longClickByText(String text){
+    public static Boolean longClickByText(String text, int index) throws UiObjectNotFoundException {
         if(uiDevice == null)
             return false;
 
-        UiObject2 object = uiDevice.findObject(By.text(text));
-        if(object == null)
-            return false;
+        UiObject object = new UiObject(new UiSelector().textContains(text).instance(index));
+
         object.longClick();
         return true;
     }
 
     /**
-     * @param resPackage
-     * @param resId
+     * @param pkg
+     * @param timeout
      * @return
      */
-    public static Boolean longClickByRes(String resPackage, String resId){
+    public static Boolean waitNewWindowByPkg(String pkg, int timeout){
         if(uiDevice == null)
             return false;
 
-        UiObject2 object = uiDevice.findObject(By.res(resPackage, resId));
-        if(object == null)
+        return uiDevice.wait(Until.hasObject(By.pkg(pkg).depth(0)), timeout);
+    }
+
+    /**
+     * @param text
+     * @param timeout
+     * @return
+     */
+    public static Boolean waitNewWindowByText(String text, int timeout){
+        if(uiDevice == null)
             return false;
-        object.longClick();
+
+        return uiDevice.wait(Until.hasObject(By.textContains(text)), timeout);
+    }
+
+    /**
+     * @param text
+     * @param textContent
+     * @param index
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean setTextByText(String text, String textContent, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+//        List<UiObject2> ret = new ArrayList<UiObject2>();
+//
+//        List<UiObject2> lst =  uiDevice.findObjects(By.textContains(text));
+//        if(lst.size() <= index)
+//            return false;
+//
+//        lst.get(index).setText(textContent);
+
+        UiObject object = new UiObject(new UiSelector().textContains(text).instance(index));
+        object.click();
+        object.setText(textContent);
         return true;
     }
 
+    /**
+     * @param cls
+     * @param text
+     * @param index
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean setTextByClass(String cls, String text, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().className(cls).instance(index));
+        object.click();
+        object.setText(text);
+
+//        List<UiObject2> ret = new ArrayList<UiObject2>();
+//
+//        List<UiObject2> lst =  uiDevice.findObjects(By.clazz(cls));
+//        if(lst.size() <= index)
+//            return false;
+//
+//        lst.get(index).setText(text);
+        return true;
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static Boolean inputText(String str) throws IOException {
+        if(uiDevice == null)
+            return false;
+
+        executeShellCommand("ime set com.rzx.godhandmator/.ime.RzxInputService");
+        String cmd = "am startservice  -a android.view.InputMethod -n com.rzx.godhandmator/.ime.RzxInputService" +
+                " --es text \"" + str +
+                "\" --es keyCode 0";
+        Log.i(TAG, cmd);
+        executeShellCommand(cmd);
+        return true;
+    }
 }
