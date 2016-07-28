@@ -5,6 +5,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -158,6 +161,15 @@ public class Main extends Activity implements OnClickListener, OnLongClickListen
 	public void onClick(View view) {
 		final String src = source.getText().toString();
 		status.setText("");
+
+		Bitmap img = BitmapFactory.decodeFile("/mnt/sdcard/GodHand/tmp/snapshot.png");
+		int pixel = img.getPixel(129, 89);
+		int red = Color.red(pixel); // same as (pixel >> 16) &0xff
+		int green = Color.green(pixel); // same as (pixel >> 8) &0xff
+		int blue = Color.blue(pixel); // same as (pixel & 0xff)
+		int alpha = Color.alpha(pixel); // same as (pixel >>> 24)
+		String ret = "0x" + red + green + blue;
+		Log.i(TAG, ret);
 	}
 
 

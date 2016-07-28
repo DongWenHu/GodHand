@@ -1,11 +1,16 @@
 package com.rzx.godhandmator;
 
+import android.app.UiAutomation;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Point;
 import android.inputmethodservice.InputMethodService;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.support.test.uiautomator.By;
+import android.support.test.uiautomator.InstrumentationUiAutomatorBridge;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
@@ -13,13 +18,23 @@ import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.View;
 import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodManager;
+
+import org.apache.http.util.EncodingUtils;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * Created by Administrator on 2016/7/24/024.
@@ -33,6 +48,7 @@ public class AutomatorApi {
      */
     public static UiDevice uiDevice = null;
     public static Context context = null;
+    public static UiAutomation uiAutomation = null;
 
     /**
      * Set init UiDevice
@@ -47,6 +63,13 @@ public class AutomatorApi {
      */
     public static void setContext(Context con){
         context = con;
+    }
+
+    /**
+     * @param uia
+     */
+    public static void setUiAutomation(UiAutomation uia){
+        uiAutomation = uia;
     }
 
 
@@ -248,16 +271,14 @@ public class AutomatorApi {
      * The screenshot is adjusted per screen rotation
      *
      * @param storePath where the PNG should be written to
-     * @param scale scale the screenshot down if needed; 1.0f for original size
-     * @param quality quality of the PNG compression; range: 0-100
      * @return true if screen shot is created successfully, false otherwise
      * @since API Level 17
      */
-    public static Boolean takeScreenshot(File storePath, Float scale, int quality) {
+    public static Boolean takeScreenshot(String storePath) {
         if(uiDevice == null)
             return false;
 
-        return uiDevice.takeScreenshot(storePath, scale.floatValue(), quality);
+        return uiDevice.takeScreenshot(new File(storePath), 1.0f, 100);
     }
 
     /**
@@ -491,12 +512,150 @@ public class AutomatorApi {
         if(uiDevice == null)
             return false;
 
+        File destDir = new File("/mnt/sdcard/GodHand/tmp");
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+
+        writeFile("/mnt/sdcard/GodHand/tmp/inputText.txt", str);
         executeShellCommand("ime set com.rzx.godhandmator/.ime.RzxInputService");
-        String cmd = "am startservice  -a android.view.InputMethod -n com.rzx.godhandmator/.ime.RzxInputService" +
-                " --es text \"" + str +
-                "\" --es keyCode 0";
-        Log.i(TAG, cmd);
-        executeShellCommand(cmd);
+        executeShellCommand("am startservice  -a android.view.InputMethod -n com.rzx.godhandmator/.ime.RzxInputService");
         return true;
     }
+
+    /**
+     * @param fileName
+     * @return
+     * @throws IOException
+     */
+    public static String readFile(String fileName) throws IOException{
+        String res="";
+        FileInputStream fin = new FileInputStream(fileName);
+        int length = fin.available();
+        byte [] buffer = new byte[length];
+        fin.read(buffer);
+        res = EncodingUtils.getString(buffer, "UTF-8");
+        fin.close();
+        return res;
+    }
+
+    /**
+     * @param fileName
+     * @param writestr
+     * @throws IOException
+     */
+    public static void writeFile(String fileName, String writestr) throws IOException{
+        FileOutputStream fout = new FileOutputStream(fileName);
+        byte [] bytes = writestr.getBytes();
+        fout.write(bytes);
+        fout.close();
+    }
+
+    /**
+     * The color in coordinate of (x,y) is similar or equal to the value of rgb.
+     *
+     * @param bitmap
+     * @param x X coordinate
+     * @param y Y coordinate
+     * @param rgb   Rgb value
+     * @param sim   0-100
+     * @return
+     */
+    private static Boolean isColor(Bitmap bitmap, int x, int y, int rgb, int sim){
+        int pixel = bitmap.getPixel(x, y);
+        sim = 255*(100-sim)/100;
+
+        int red1 = (pixel >> 16) &0xff;
+        int green1 = (pixel >> 8) &0xff;
+        int blue1 = (pixel & 0xff);
+
+        int red2 =(rgb >> 16) &0xff;
+        int green2 = (rgb >> 8) &0xff;
+        int blue2 = (rgb & 0xff);
+
+        int redDiff = Math.abs(red1 - red2);
+        int greenDiff = Math.abs(green1 - green2);
+        int blueDiff = Math.abs(blue1 - blue2);
+
+        //waste time
+//        Math.sqrt(redDiff*redDiff + greenDiff*greenDiff + blueDiff*blueDiff)
+
+        return redDiff <= sim && greenDiff <= sim && blueDiff <= sim;
+    }
+
+    /**
+     * Find the point by multiple pixels
+     * Example:
+     *  findMultiColorInRegionFuzzy( 0xade1f5, "466|29|0x2cadf1,77|192|0x686868,78|193|0x1a1a1a", 90, 0, 0, 719, 1279)
+     *
+     * @param oriPix Original pixel
+     * @param otherPix Other pixels description. Offset in original and value of pixel
+     * @param sim Similarity of every pixel, value can be set from 0 to 100.
+     * @param startX The start X coordinate of picture.
+     * @param startY The start Y coordinate of picture.
+     * @param endX  The end X coordinate of picture.
+     * @param endY  The end Y coordinate of picture.
+     * @return  If find the point then return the point(String), else return "-1,-1".
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException
+     * @throws NoSuchFieldException
+     */
+    public static String findMultiColorInRegionFuzzy(
+            int oriPix,
+            String otherPix,
+            int sim,
+            int startX,
+            int startY,
+            int endX,
+            int endY)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
+        Bitmap screenshot = uiAutomation.takeScreenshot();
+
+        ArrayList<Integer> xs = new ArrayList<>(10);
+        ArrayList<Integer> ys = new ArrayList<>(10);
+        ArrayList<Integer> rgbs = new ArrayList<>(10);
+
+        String[] onePix = otherPix.split(",");
+
+        int i;
+        int j;
+        for ( i = 0; i < onePix.length; ++i){
+            String[] pros = onePix[i].split("\\|");
+            xs.add(i, Integer.parseInt(pros[0]));
+            ys.add(i, Integer.parseInt(pros[0]));
+            rgbs.add(i, Integer.parseInt(pros[0].replaceAll("^0[x|X]", ""), 16));
+        }
+
+        int maxX = Collections.max(xs);
+        int maxY = Collections.max(ys);
+        int orX = -1, orY = -1;
+        boolean isFind = false;
+        for (i = startX; i < endX; i++){
+            for (j = startY; j < endY; j++){
+                if ((maxX - i) < 0 || (maxY - j) < 0){
+                    return "-1,-1";
+                }
+
+                if (isColor(screenshot, i, j, oriPix, sim)){
+                    orX = i;
+                    orY = j;
+                    isFind = true;
+                    for (int k = 0; k < xs.size(); ++k){
+                        if (!isColor(screenshot, i + xs.get(k), j + ys.get(k), rgbs.get(k), sim)){
+                            isFind = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isFind){
+            return ""+orX+","+orY;
+        }
+
+        return "-1,-1";
+    }
+
 }
