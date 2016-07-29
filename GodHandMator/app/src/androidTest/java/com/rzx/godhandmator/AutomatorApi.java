@@ -36,6 +36,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 /**
  * Created by Administrator on 2016/7/24/024.
@@ -678,4 +679,20 @@ public class AutomatorApi {
         return "-1,-1";
     }
 
+    /**
+     * @param file
+     * @param content
+     */
+    public static void log(String file, String content) throws IOException {
+        File destDir = new File("/mnt/sdcard/GodHand/log");
+        if (!destDir.exists()){
+            destDir.mkdirs();
+        }
+
+        Date date=new Date();
+
+        String logfile = "/mnt/sdcard/GodHand/log/"+file+".log";
+        String logContent = String.format("[%tF %tT]: %s\n", date, date, content);
+        writeFile(logfile, logContent);
+    }
 }
