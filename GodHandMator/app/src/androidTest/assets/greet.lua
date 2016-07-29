@@ -17,7 +17,7 @@ function test()
 --    AutomatorApi:inputText("#Enter")
 --    AutomatorApi:takeScreenshot("/mnt/sdcard/GodHand/tmp/snapshot.png");
 
-    ret = AutomatorApi:findMultiColorInRegionFuzzy( 0x000000, "317|63|0xd4d4d4,394|90|0x2cadf1,79|201|0x40b5f2,109|200|0x777777,-47|174|0x191919,8|271|0xffffff", 90, 0, 0, 719, 1279)
+    ret = AutomatorApi:findMultiColorInRegionFuzzy( 0x8bbf4f, "-67|88|0x202c68,28|201|0x1a305f,199|8|0x0000fd,189|-190|0x44a6c5,-160|-186|0x212221,-344|-173|0x1f0f4d,-368|216|0x00ff00,-352|346|0x10354f", 99, 0, 0, 719, 1279)
 
     AutomatorApi:inputText(ret)
 end

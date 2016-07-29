@@ -7,7 +7,6 @@ import android.os.RemoteException;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.Configurator;
 import android.support.test.uiautomator.InstrumentationUiAutomatorBridge;
-import android.support.test.uiautomator.UiAutomatorBridge;
 import android.support.test.uiautomator.UiDevice;
 
 import org.hamcrest.CoreMatchers;

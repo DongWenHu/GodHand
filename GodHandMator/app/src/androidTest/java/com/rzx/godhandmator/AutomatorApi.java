@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -554,16 +555,16 @@ public class AutomatorApi {
     /**
      * The color in coordinate of (x,y) is similar or equal to the value of rgb.
      *
-     * @param bitmap
-     * @param x X coordinate
-     * @param y Y coordinate
-     * @param rgb   Rgb value
+     * @param pixel To be compared first one.
+     * @param rgb   To be compared second one.
      * @param sim   0-100
      * @return
      */
-    private static Boolean isColor(Bitmap bitmap, int x, int y, int rgb, int sim){
-        int pixel = bitmap.getPixel(x, y);
-        sim = 255*(100-sim)/100;
+    private static Boolean isPixelSimilar(int pixel, int rgb, int sim){
+        sim = (100-sim);
+        if (sim == 0){
+            return pixel == rgb;
+        }
 
         int red1 = (pixel >> 16) &0xff;
         int green1 = (pixel >> 8) &0xff;
@@ -612,47 +613,66 @@ public class AutomatorApi {
             throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NoSuchFieldException {
         Bitmap screenshot = uiAutomation.takeScreenshot();
 
+        int width = screenshot.getWidth();
+        int height = screenshot.getHeight();
+        int[] pixes = new int[width*height];
+
+        oriPix |= 0xFF000000;
+        screenshot.getPixels(pixes, 0,
+                screenshot.getWidth(),
+                0, 0, width, height);
+
         ArrayList<Integer> xs = new ArrayList<>(10);
         ArrayList<Integer> ys = new ArrayList<>(10);
-        ArrayList<Integer> rgbs = new ArrayList<>(10);
-
-        String[] onePix = otherPix.split(",");
-
+        int[] rgbs = new int[10];
+        int maxX = 0;
+        int maxY = 0;
+        int minX = 0;
+        int minY = 0;
         int i;
         int j;
-        for ( i = 0; i < onePix.length; ++i){
-            String[] pros = onePix[i].split("\\|");
-            xs.add(i, Integer.parseInt(pros[0]));
-            ys.add(i, Integer.parseInt(pros[0]));
-            rgbs.add(i, Integer.parseInt(pros[0].replaceAll("^0[x|X]", ""), 16));
-        }
 
-        int maxX = Collections.max(xs);
-        int maxY = Collections.max(ys);
-        int orX = -1, orY = -1;
+        if (!otherPix.equals("")) {
+
+            String[] onePix = otherPix.split(",");
+
+            for (i = 0; i < onePix.length; ++i) {
+                String[] pros = onePix[i].split("\\|");
+                xs.add(i, Integer.parseInt(pros[0]));
+                ys.add(i, Integer.parseInt(pros[1]));
+                rgbs[i] = Integer.parseInt(pros[2].replaceAll("^0[x|X]", ""), 16) | 0xFF000000;
+            }
+
+            maxX = Collections.max(xs);
+            maxY = Collections.max(ys);
+            minX = Collections.min(xs);
+            minY = Collections.min(ys);
+        }
         boolean isFind = false;
         for (i = startX; i < endX; i++){
             for (j = startY; j < endY; j++){
-                if ((maxX - i) < 0 || (maxY - j) < 0){
-                    return "-1,-1";
+                if ((maxX + i) > endX ||
+                    (maxY + j) > endY ||
+                    (minX + i) < startX ||
+                    (minY + j) < startY){
+                    continue;
                 }
 
-                if (isColor(screenshot, i, j, oriPix, sim)){
-                    orX = i;
-                    orY = j;
+                int n = j*width+i;
+                if (isPixelSimilar(pixes[n], oriPix, sim)){
                     isFind = true;
                     for (int k = 0; k < xs.size(); ++k){
-                        if (!isColor(screenshot, i + xs.get(k), j + ys.get(k), rgbs.get(k), sim)){
+                        int m = (j+ys.get(k))*width + (i+xs.get(k));
+                        if (!isPixelSimilar(pixes[m], rgbs[k], sim)){
                             isFind = false;
                             break;
                         }
                     }
+                    if (isFind){
+                        return ""+i+","+j;
+                    }
                 }
             }
-        }
-
-        if (isFind){
-            return ""+orX+","+orY;
         }
 
         return "-1,-1";
