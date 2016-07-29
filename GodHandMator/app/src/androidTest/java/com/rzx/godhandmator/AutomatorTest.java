@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -72,12 +74,19 @@ public class AutomatorTest {
     }
 
     @Test
-    public void testCheckPreconditions() throws InterruptedException, LuaException {
+    public void testCheckPreconditions() throws InterruptedException, IOException {
         Assert.assertThat(mDevice, CoreMatchers.notNullValue());
 
         LuaState L = LuaStateFactory.newLuaState();
         setLuaState(L);
-        evalLua(L, "require 'greet'\ntest()\n");
+        try {
+            evalLua(L, "require 'greet'\ntest()\n");
+        } catch (LuaException e) {
+            e.printStackTrace();
+            StringWriter sw = new StringWriter();
+            e.printStackTrace(new PrintWriter(sw, true));
+            AutomatorApi.log("system", sw.toString());
+        }
     }
 
     /**
