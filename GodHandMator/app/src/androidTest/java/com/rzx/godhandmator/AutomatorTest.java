@@ -80,7 +80,7 @@ public class AutomatorTest {
         LuaState L = LuaStateFactory.newLuaState();
         setLuaState(L);
         try {
-            evalLua(L, "require 'greet'\ntest()\n");
+            evalLua(L, "/mnt/sdcard/GodHand/lua/main.lua");
         } catch (LuaException e) {
             e.printStackTrace();
             StringWriter sw = new StringWriter();
@@ -157,13 +157,13 @@ public class AutomatorTest {
 
     /**
      * @param L
-     * @param src
+     * @param filename
      * @return
      * @throws LuaException
      */
-    private boolean evalLua(LuaState L, String src) throws LuaException {
+    private boolean evalLua(LuaState L, String filename) throws LuaException {
         L.setTop(0);
-        int ok = L.LloadString(src);
+        int ok = L.LloadFile(filename);
 
         if (ok == 0) {
             L.getGlobal("debug");

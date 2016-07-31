@@ -1,4 +1,5 @@
 require 'import'
+json = require 'json'
 import 'com.rzx.godhandmator.AutomatorApi'
 import 'android.util.Log'
 
@@ -20,7 +21,12 @@ function test()
 --    ret = AutomatorApi:findMultiColorInRegionFuzzy( 0x8bbf4f, "-67|88|0x202c68,28|201|0x1a305f,199|8|0x0000fd,189|-190|0x44a6c5,-160|-186|0x212221,-344|-173|0x1f0f4d,-368|216|0x00ff00,-352|346|0x10354f", 99, 0, 0, 719, 1279)
 
 --    AutomatorApi:inputText(ret)
-    AutomatorApi:loga("aaa", "fdsfdsfds");
+
+--    local tbl_test = {['a']='c', ['b']=1, ['c']=false}
+--    tbl_str = json.encode(tbl_test)
+
+    ret = AutomatorApi:httpPost("http://www.baidu.com", "")
+    AutomatorApi:log("aaa", ret);
 end
 
 

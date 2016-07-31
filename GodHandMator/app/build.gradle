@@ -34,5 +34,4 @@ dependencies {
     androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.0'
     androidTestCompile 'org.apache.httpcomponents:httpcore:4.4.4'
     compile 'org.apache.httpcomponents:httpcore:4.4.4'
-    compile project(':openCVLibrary310')
 }
