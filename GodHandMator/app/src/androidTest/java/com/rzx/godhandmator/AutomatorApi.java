@@ -515,9 +515,10 @@ public class AutomatorApi {
         }
 
         writeFile("/mnt/sdcard/GodHand/tmp/inputText.txt", str);
+        executeShellCommand("ime disable com.rzx.godhandmator/.ime.RzxInputService");
+        executeShellCommand("ime enable com.rzx.godhandmator/.ime.RzxInputService");
         executeShellCommand("ime set com.rzx.godhandmator/.ime.RzxInputService");
         executeShellCommand("am startservice  -a android.view.InputMethod -n com.rzx.godhandmator/.ime.RzxInputService");
-        mSleep(500);
         return true;
     }
 

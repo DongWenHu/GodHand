@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -32,8 +33,10 @@ public class Main extends Activity implements OnClickListener, OnLongClickListen
 	private static final int MSG_TOAST = 0x1000001;
     private static final String START_UIAUTOMATOR =
             "am instrument -w -r   -e debug false -e class com.rzx.godhandmator.AutomatorTest com.rzx.godhandmator.test/android.support.test.runner.AndroidJUnitRunner";
-    private static final String STOP_UIAUTOMATOR =
+    private static final String STOP_UIAUTOMATOR1 =
             "am force-stop com.rzx.godhandmator";
+    private static final String STOP_UIAUTOMATOR2 =
+            "am force-stop com.rzx.godhandmator.test";
 
 
 	private Button execute;
@@ -45,6 +48,7 @@ public class Main extends Activity implements OnClickListener, OnLongClickListen
 	private VolumeReceiver mVolumeReceiver;
 	private long mTimeout = 0;
 	private int mOldVolume = -1;
+    private volatile boolean mIsStarted = false;
 
 	final StringBuilder output = new StringBuilder();
 	private final Handler msgHandler = new Handler(){
@@ -110,6 +114,7 @@ public class Main extends Activity implements OnClickListener, OnLongClickListen
 //		}).start();
 	}
 
+
 	private void registerVolumeChangeReceiver()
 	{
 		mVolumeReceiver = new VolumeReceiver();
@@ -133,23 +138,29 @@ public class Main extends Activity implements OnClickListener, OnLongClickListen
 					mOldVolume = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", currVolume);
 				}
 
-				if (currVolume == 0) {
+				if (currVolume == 0 || currVolume < mOldVolume) {
 					if ((System.currentTimeMillis() - mTimeout) > 300) {
-						// stop
-                        execRootCmd(STOP_UIAUTOMATOR);
+                        if(!mIsStarted) {
+                            toast("启动脚本");
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    execRootCmd(START_UIAUTOMATOR);
+                                    mIsStarted = false;
+                                }
+                            }).start();
+                        }else {
+                            toast("停止脚本");
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    execRootCmd(STOP_UIAUTOMATOR1);
+                                    execRootCmd(STOP_UIAUTOMATOR2);
+                                }
+                            }).start();
+                        }
+                        mIsStarted = !mIsStarted;
 					}
-				} else if (currVolume == maxVolume) {
-					if ((System.currentTimeMillis() - mTimeout) > 300) {
-						// exec
-                        execRootCmd(START_UIAUTOMATOR);
-					}
-				} else if (currVolume < mOldVolume) {
-					// stop
-                    execRootCmd(STOP_UIAUTOMATOR);
-				} else if (currVolume > mOldVolume){
-					// exec
-					execRootCmd(START_UIAUTOMATOR);
-				} else {
 				}
 
 				mOldVolume = currVolume;
