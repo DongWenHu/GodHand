@@ -8,8 +8,10 @@ import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
+import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -20,8 +22,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -384,16 +388,47 @@ public class AutomatorApi {
 
     /**
      * Find object by text, and click the object if the object is clickable.
-     * @param text
+     * @param text contains text
      * @param index
      * @return true if successful, else return false
      * @throws UiObjectNotFoundException
      */
-    public static Boolean clickByText(String text, int index) throws UiObjectNotFoundException {
+    public static Boolean clickByTextContain(String text, int index) throws UiObjectNotFoundException {
         if(uiDevice == null)
             return false;
 
-        UiObject object = new UiObject(new UiSelector().textContains(text).clickable(true).instance(index));
+        UiObject object = new UiObject(new UiSelector().textContains(text).instance(index));
+        object.click();
+        return true;
+    }
+
+    /**
+     * Find object by text, and click the object if the object is clickable.
+     * @param text equal text
+     * @param index
+     * @return true if successful, else return false
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean clickByTextEqual(String text, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().text(text).instance(index));
+        object.click();
+        return true;
+    }
+
+    /**
+     * @param cls
+     * @param index
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean clickByClass(String cls, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().className(cls).instance(index));
         object.click();
         return true;
     }
@@ -412,16 +447,32 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text
+     * @param text contains text
      * @param index
      * @return
      * @throws UiObjectNotFoundException
      */
-    public static Boolean longClickByText(String text, int index) throws UiObjectNotFoundException {
+    public static Boolean longClickByTextContain(String text, int index) throws UiObjectNotFoundException {
         if(uiDevice == null)
             return false;
 
-        UiObject object = new UiObject(new UiSelector().textContains(text).longClickable(true).instance(index));
+        UiObject object = new UiObject(new UiSelector().textContains(text).instance(index));
+
+        object.longClick();
+        return true;
+    }
+
+    /**
+     * @param text equals text
+     * @param index
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean longClickByTextEqual(String text, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().text(text).instance(index));
 
         object.longClick();
         return true;
@@ -440,11 +491,11 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text
+     * @param text Contains text
      * @param timeout
      * @return
      */
-    public static Boolean waitNewWindowByText(String text, int timeout){
+    public static Boolean waitNewWindowByTextContain(String text, int timeout){
         if(uiDevice == null)
             return false;
 
@@ -452,25 +503,70 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text
+     * @param text Equals text
+     * @param timeout
+     * @return
+     */
+    public static Boolean waitNewWindowByTextEqual(String text, int timeout){
+        if(uiDevice == null)
+            return false;
+
+        return uiDevice.wait(Until.hasObject(By.text(text)), timeout);
+    }
+
+    /**
+     * @param desc Contains description
+     * @param timeout
+     * @return
+     */
+    public static Boolean waitNewWindowByDescContain(String desc, int timeout){
+        if(uiDevice == null)
+            return false;
+
+        return uiDevice.wait(Until.hasObject(By.descContains(desc)), timeout);
+    }
+
+    /**
+     * @param desc Equals description
+     * @param timeout
+     * @return
+     */
+    public static Boolean waitNewWindowByDescEqual(String desc, int timeout){
+        if(uiDevice == null)
+            return false;
+
+        return uiDevice.wait(Until.hasObject(By.desc(desc)), timeout);
+    }
+
+    /**
+     * @param text Contains text
      * @param textContent
      * @param index
      * @return
      * @throws UiObjectNotFoundException
      */
-    public static Boolean setTextByText(String text, String textContent, int index) throws UiObjectNotFoundException {
+    public static Boolean setTextByTextContain(String text, String textContent, int index) throws UiObjectNotFoundException {
         if(uiDevice == null)
             return false;
 
-//        List<UiObject2> ret = new ArrayList<UiObject2>();
-//
-//        List<UiObject2> lst =  uiDevice.findObjects(By.textContains(text));
-//        if(lst.size() <= index)
-//            return false;
-//
-//        lst.get(index).setText(textContent);
-
         UiObject object = new UiObject(new UiSelector().textContains(text).instance(index));
+        object.click();
+        object.setText(textContent);
+        return true;
+    }
+
+    /**
+     * @param text Equals text
+     * @param textContent
+     * @param index
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean setTextByTextEqual(String text, String textContent, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().text(text).instance(index));
         object.click();
         object.setText(textContent);
         return true;
@@ -753,7 +849,7 @@ public class AutomatorApi {
      * @param url
      *            发送请求的 URL
      * @param param
-     *            请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
+     *
      * @return 所代表远程资源的响应结果
      */
     public static String httpPost(String url, String param) {
@@ -807,6 +903,68 @@ public class AutomatorApi {
     }
 
     /**
+     * @param url
+     * @am
+     * @return
+     */
+    public static String httpPostWithHeader(String url, String postData, String header) {
+        PrintWriter out = null;
+        BufferedReader in = null;
+        String result = "";
+        try {
+            URL realUrl = new URL(url);
+            // 打开和URL之间的连接
+            URLConnection conn = realUrl.openConnection();
+            // 设置通用的请求属性
+            conn.setRequestProperty("accept", "*/*");
+            conn.setRequestProperty("connection", "Keep-Alive");
+            conn.setRequestProperty("user-agent",
+                    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+
+            String[] headers = header.split(";");
+            for (int k = 0; k < headers.length; ++k){
+                String[] kv = headers[k].split(":");
+                conn.setRequestProperty(kv[0], kv[1]);
+            }
+
+            // 发送POST请求必须设置如下两行
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            // 获取URLConnection对象对应的输出流
+            out = new PrintWriter(conn.getOutputStream());
+            // 发送请求参数
+            out.print(postData);
+            // flush输出流的缓冲
+            out.flush();
+            // 定义BufferedReader输入流来读取URL的响应
+            in = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                result += line;
+            }
+        } catch (Exception e) {
+            System.out.println("发送 POST 请求出现异常！"+e);
+            e.printStackTrace();
+        }
+        //使用finally块来关闭输出流、输入流
+        finally{
+            try{
+                if(out!=null){
+                    out.close();
+                }
+                if(in!=null){
+                    in.close();
+                }
+            }
+            catch(IOException ex){
+                ex.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    /**
      * @param ms
      */
     public static void mSleep(int ms){
@@ -821,12 +979,41 @@ public class AutomatorApi {
      * @param filename
      * @return
      */
-    public static boolean fileExist(String filename) throws IOException {
+    public static boolean fileExists(String filename) throws IOException {
         String result = executeShellCommand("ls " + filename);
         if(result.contains("No such file or directory")){
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static String base64Encode(String str){
+        return Base64.encodeToString(str.getBytes(), Base64.DEFAULT);
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static String base64Decode(String str){
+        return String.valueOf(Base64.decode(str, Base64.DEFAULT));
+    }
+
+    /**
+     * @param filename
+     * @return
+     */
+    public static String base64EncodeFile(String filename) throws IOException {
+        File file = new File(filename);
+        FileInputStream inputFile = new FileInputStream(file);
+        byte[] buffer = new byte[(int)file.length()];
+        inputFile.read(buffer);
+        inputFile.close();
+        return Base64.encodeToString(buffer,Base64.DEFAULT);
     }
 }

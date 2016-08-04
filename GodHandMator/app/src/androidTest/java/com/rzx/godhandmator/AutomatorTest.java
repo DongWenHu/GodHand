@@ -66,9 +66,11 @@ public class AutomatorTest {
         File luaDir = new File("/mnt/sdcard/GodHand/lua");
         File pluginDir = new File("/mnt/sdcard/GodHand/plugin");
         File logDir = new File("/mnt/sdcard/GodHand/log");
+        File resDir = new File("/mnt/sdcard/GodHand/res");
         luaDir.mkdirs();
         pluginDir.mkdirs();
         logDir.mkdirs();
+        resDir.mkdirs();
 
         Configurator.getInstance().setActionAcknowledgmentTimeout(1);
     }
@@ -80,13 +82,19 @@ public class AutomatorTest {
         LuaState L = LuaStateFactory.newLuaState();
         setLuaState(L);
         try {
-            evalLua(L, "/mnt/sdcard/GodHand/lua/main.lua");
+            String filename = AutomatorApi.executeShellCommand("cat /mnt/sdcard/GodHand/tmp/run_file");
+            if (filename == ""){
+                filename = "/mnt/sdcard/GodHand/lua/main.lua";
+            }
+            evalLua(L, filename);
         } catch (LuaException e) {
             e.printStackTrace();
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw, true));
             AutomatorApi.log("system", sw.toString());
         }
+
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     /**
@@ -146,6 +154,7 @@ public class AutomatorTest {
 
             L.getField(-1, "path");            // package path
             String customPath = context.getFilesDir() + "/?.lua";
+            customPath += ";/mnt/sdcard/GodHand/lua/?.lua";
             L.pushString(";" + customPath);    // package path custom
             L.concat(2);                       // package pathCustom
             L.setField(-2, "path");            // package
