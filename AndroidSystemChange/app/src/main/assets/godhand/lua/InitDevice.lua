@@ -10,7 +10,7 @@ function setXposedInstaller()
 	if ret ==false then
 		return false
 	end
-	AutomatorApi:clickByTextEqual("框架", 0)
+	AutomatorApi:clickByTextEqual("模块", 0)
 	
 	ret = AutomatorApi:waitNewWindowByTextEqual("HookSystemParameter", 5000)
 	if ret ==false then
@@ -27,12 +27,12 @@ function setXposedInstaller()
 	AutomatorApi:mSleep(1000)
 	AutomatorApi:clickByTextEqual("框架", 0)
 
-	if AutomatorApi:waitNewWindowByTextEqual("小心！", 3000) then
+	if AutomatorApi:waitNewWindowByTextEqual("小心！", 5000) then
 		AutomatorApi:clickByTextEqual("确定", 0)
 	end
 	
 	AutomatorApi:clickByTextEqual("安装/更新", 0)
-	if AutomatorApi:waitNewWindowByTextEqual("确定", 3000) then
+	if AutomatorApi:waitNewWindowByTextEqual("确定", 5000) then
 		AutomatorApi:clickByTextEqual("确定", 0)
 	end
 	return true
@@ -47,7 +47,6 @@ function setLockClose()
 	end
 	AutomatorApi:clickByTextEqual("屏幕锁定", 0)
 	ret = AutomatorApi:waitNewWindowByTextEqual("选择屏幕锁定方式", 5000)
-	ret = AutomatorApi:waitNewWindowByTextEqual("安全与锁屏", 5000)
 	if ret ==false then
 		return false
 	end
@@ -57,18 +56,11 @@ end
 
 
 function main()
-	AutomatorApi:executeShellCommand("mkdir /sdcard/tmp")
-	AutomatorApi:executeShellCommand("touch /sdcard/tmp/init_step")
-	local step = AutomatorApi:readFile("/sdcard/tmp/init_step")
-	
-	if step == nil or step == "" then
-		AutomatorApi:executeShellCommand("settings put system screen_off_timeout 2147483647")
-		AutomatorApi:executeShellCommand("settings put system screen_brightness 10")
-		AutomatorApi:executeShellCommand("echo 1 > /sdcard/tmp/init_step")
-	end
+	AutomatorApi:executeShellCommand("settings put system screen_off_timeout 2147483647")
+	AutomatorApi:executeShellCommand("settings put system screen_brightness 10")
+		
 	setLockClose()
 	setXposedInstaller()
-
 end
 
 main()

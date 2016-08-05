@@ -25,8 +25,8 @@ end
 
 
 function DoTask.doTask(tb_data)
-	-- local jsdata = AutomatorApi:readFile(getPath().."/tmp/aaa.json")
-	-- tb_data = json.decode(jsdata)
+	local jsdata = AutomatorApi:readFile(getPath().."/tmp/aaa.json")
+	tb_data = json.decode(jsdata)
 	local task_id = tb_data["task_id"]
 	local task_type = tb_data["task_type"]
 	local guid = AutomatorApi:readFile(getPath().."/uuid.txt")

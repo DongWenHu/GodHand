@@ -10,5 +10,6 @@ g_conf_get_vcode_url = g_conf_host.."/get_vcode"
 g_conf_put_vcode_url = g_conf_host.."/put_vcode"
 g_conf_send_phone_url = g_conf_host.."/send_phone"
 g_conf_get_sms_url = g_conf_host.."/get_sms"
+g_conf_upload_file_url = g_conf_host.."/upload"
 
 g_conf_wx_vote_s_snapshot_path = "/sdcard/GodHand/tmp/vote_snapshot.png"

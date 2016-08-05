@@ -8,7 +8,6 @@ import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiObjectNotFoundException;
-import android.support.test.uiautomator.UiScrollable;
 import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
 import android.util.Base64;
@@ -22,15 +21,16 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -330,7 +330,6 @@ public class AutomatorApi {
             dos.flush();
             String line = null;
             while ((line = dis.readLine()) != null) {
-                Log.d("result", line);
                 result += line;
             }
             p.waitFor();
@@ -786,7 +785,9 @@ public class AutomatorApi {
 
         String logfile = "/mnt/sdcard/GodHand/log/"+file+".log";
         String logContent = String.format("[%tF %tT]: %s\n", date, date, content);
-        writeFile(logfile, logContent);
+        FileWriter writer = new  FileWriter(logfile,  true);
+        writer.write(logContent);
+        writer.close();
     }
 
     /**
@@ -1002,6 +1003,46 @@ public class AutomatorApi {
      */
     public static String base64Decode(String str){
         return String.valueOf(Base64.decode(str, Base64.DEFAULT));
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static String Md5_32(String str){
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(str.getBytes());
+            byte b[] = md.digest();
+            int i;
+            StringBuffer buf = new StringBuffer("");
+            for (int offset = 0; offset < b.length; offset++) {
+                i = b[offset];
+                if (i < 0)
+                    i += 256;
+                if (i < 16)
+                    buf.append("0");
+                buf.append(Integer.toHexString(i));
+            }
+            return buf.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public static String Md5_16(String str){
+        String ret = Md5_32(str);
+        if (ret != null){
+            return ret.substring(8, 24);
+        }
+
+        return null;
     }
 
     /**

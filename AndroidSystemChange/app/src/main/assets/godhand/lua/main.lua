@@ -12,7 +12,7 @@ function check_update()
 	local res = AutomatorApi:httpGet(g_conf_check_update_url, "version="..version)
 	if res ~= "" then
 		if res == '{"success":true}' then
-			local ret = httpGet(g_conf_update_url, "")
+			local ret = AutomatorApi:httpGet(g_conf_update_url, "")
 			if ret ~= "" then
 				AutomatorApi:writeFile(update_file_recv_path, ret)
 				AutomatorApi:executeShellCommand("tar -xf .."..update_file_recv_path.." -C "..getPath())
@@ -56,7 +56,7 @@ function main()
 	AutomatorApi:writeFile(task_file_recv_path, res)
 	AutomatorApi:executeShellCommand("mkdir -p "..task_file_extract_path)
 	AutomatorApi:executeShellCommand("rm -fr "..task_file_extract_path.."/*")
-	AutomatorApi:executeShellCommand("tar -xf .."..task_file_recv_path.." -C "..task_file_extract_path)
+	AutomatorApi:executeShellCommand("tar -xf "..task_file_recv_path.." -C "..task_file_extract_path)
 
 
 	g_task_id = AutomatorApi:executeShellCommand("ls "..task_file_extract_path)
@@ -73,6 +73,15 @@ function main()
 	local tbl_task = json.decode(jsdata)
 	local task_type = tbl_task["task_type"]
 	tbl_task["task_id"] = g_task_id
+	
+	local tar_file = AutomatorApi:executeShellCommand("ls "..task_file_extract_path.."/"..g_task_id.."/*.tar")
+	local ret_find = string.find(tar_file, "No such file or directory")
+	if ret_find == nil then
+		tar_file = string.gsub(tar_file, "\n", "")
+		AutomatorApi:executeShellCommand("cp -a "..task_file_extract_path.."/"..g_task_id.."/"..tar_file.." "
+			..getPath().."/tmp")
+	end
+		
 
 	if task_type == "wx_vote" then
 		AutomatorApi:executeShellCommand("cp -a "..task_file_extract_path.."/"..g_task_id.."/main.lua "..getPath().."/lua/wx_vote.lua")
@@ -83,4 +92,6 @@ function main()
 end
 
 main()
+-- dt = dofile(getPath().."/lua/DoTask.lua")
+-- dt.doTask()
 

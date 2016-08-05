@@ -14,6 +14,12 @@ function WechatOps.login(usr, pwd)
 	AutomatorApi:executeShellCommand("am force-stop com.tencent.mm")
 	AutomatorApi:mSleep(1000)
 	local cache_file = getPath().."/res/cache/com.tencent.mm/"..usr
+	local tar_file = getPath().."/tmp/"..usr..".tar"
+	
+	if AutomatorApi:fileExists(tar_file) then
+		AutomatorApi:executeShellCommand("rm -fr "..cache_file)
+		AutomatorApi:executeShellCommand("tar -xf "..tar_file.." -C "..getPath().."/res/cache/com.tencent.mm/")
+	end
 	
 	if AutomatorApi:fileExists(cache_file) then
 		ret,msg = WechatOps.loginByCache(cache_file, usr, pwd)
@@ -122,7 +128,7 @@ function WechatOps.register(nick, country_code, phone_num, password)
 		AutomatorApi:clickByTextEqual("注册", 0)
 		
 		--确认手机号码提示框
-		ret = AutomatorApi:waitNewWindowByTextEqual('确认手机号码', 15000)
+		ret = AutomatorApi:waitNewWindowByTextEqual('确认手机号码', 35000)
 		if ret == false then
 			msg = "Register failed. Can't show prompt dialog."
 			break
@@ -145,15 +151,16 @@ function WechatOps.register(nick, country_code, phone_num, password)
 		
 		--获取验证码并输入验证码
 		local sms
-		ret, sms = getSms(AutomatorApi:readFile(getPath().."/uuid.txt"), g_task_id, phone_num, 60000)
+		ret, sms = getSms(AutomatorApi:readFile(getPath().."/uuid.txt"), g_task_id, phone_num, 120000)
 		if ret == false then
 			ret = false
 			msg = "Register failed. "..sms
 			break
 		end
 		
+		AutomatorApi:click(286, 407)
+		AutomatorApi:inputText(sms)
 		AutomatorApi:mSleep(2000)
-		AutomatorApi:setTextByClass("android.widget.EditText", sms, 0)
 		AutomatorApi:clickByTextEqual("下一步", 0)
 		
 		local time_out = 30000
@@ -434,13 +441,20 @@ end
 --所有操作结束后执行保存缓存的操作
 function WechatOps.doEnd()
 	if WechatOps.strCurUsr ~= "" then
+		AutomatorApi:mSleep(3000)
 		AutomatorApi:executeShellCommand("am force-stop com.tencent.mm")
 		AutomatorApi:mSleep(3000)
 		local cache_file = getPath().."/res/cache/com.tencent.mm/"..WechatOps.strCurUsr
 		
-		AutomatorApi:executeShellCommand("rm -fr "..cache_file)
+		AutomatorApi:executeShellCommand("rm -fr "..cache_file.."*")
 		AutomatorApi:executeShellCommand("mkdir -p "..cache_file)
-		AutomatorApi:executeShellCommand("cp -a /data/data/com.tencent.mm/* "..cache_file)
+		AutomatorApi:executeShellCommand("cp -a /data/data/com.tencent.mm/MicroMsg "..cache_file)
+		AutomatorApi:executeShellCommand("cp -a /data/data/com.tencent.mm/files "..cache_file)
+		AutomatorApi:executeShellCommand("cp -a /data/data/com.tencent.mm/shared_prefs "..cache_file)
+		AutomatorApi:executeShellCommand("tar -cf "..cache_file..".tar "..WechatOps.strCurUsr.." -C "..getPath().."/res/cache/com.tencent.mm/")
+		AutomatorApi:executeShellCommand("curl -F 'filename=@"..cache_file..".tar' "
+			.."-d \"{'task_id':'"..g_task_id.."'}\" "
+			..g_conf_upload_file_url)
 	end
 	return true, "End succeeded."
 end

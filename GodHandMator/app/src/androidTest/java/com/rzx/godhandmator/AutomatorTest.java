@@ -67,10 +67,12 @@ public class AutomatorTest {
         File pluginDir = new File("/mnt/sdcard/GodHand/plugin");
         File logDir = new File("/mnt/sdcard/GodHand/log");
         File resDir = new File("/mnt/sdcard/GodHand/res");
+        File tmpDir = new File("/mnt/sdcard/GodHand/tmp");
         luaDir.mkdirs();
         pluginDir.mkdirs();
         logDir.mkdirs();
         resDir.mkdirs();
+        tmpDir.mkdir();
 
         Configurator.getInstance().setActionAcknowledgmentTimeout(1);
     }
@@ -85,6 +87,8 @@ public class AutomatorTest {
             String filename = AutomatorApi.executeShellCommand("cat /mnt/sdcard/GodHand/tmp/run_file");
             if (filename == ""){
                 filename = "/mnt/sdcard/GodHand/lua/main.lua";
+            } else {
+                filename = "/mnt/sdcard/GodHand/lua/" + filename;
             }
             evalLua(L, filename);
         } catch (LuaException e) {

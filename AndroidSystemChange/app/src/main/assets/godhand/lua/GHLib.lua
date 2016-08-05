@@ -155,11 +155,6 @@ function getSms(guid, task_id, phone_num, timeout)
 		}
 		
 	str_post = json.encode(str_post)
-	AutomatorApi:log("test", "curl -d '"..str_post
-		.."' -o "..http_result_file
-		.." -H 'Content-Type: application/json'"
-		.." -H 'Content-Length: "..#str_post.."' "
-		..g_conf_send_phone_url)
 	AutomatorApi:executeShellCommand("curl -d '"..str_post
 		.."' -o "..http_result_file
 		.." -H 'Content-Type: application/json'"
