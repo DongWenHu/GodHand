@@ -1,0 +1,178 @@
+[
+    {
+        "outputFile": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\build\\intermediates\\res\\merged\\debug\\values\\values.xml",
+        "map": [
+            {
+                "to": {
+                    "startLine": 2,
+                    "startColumn": 4,
+                    "startOffset": 55,
+                    "endColumn": 57,
+                    "endOffset": 108
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\dimens.xml",
+                    "position": {
+                        "startLine": 3,
+                        "startColumn": 4,
+                        "startOffset": 92,
+                        "endColumn": 57,
+                        "endOffset": 145
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 3,
+                    "startColumn": 4,
+                    "startOffset": 113,
+                    "endColumn": 55,
+                    "endOffset": 164
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\dimens.xml",
+                    "position": {
+                        "startLine": 4,
+                        "startColumn": 4,
+                        "startOffset": 151,
+                        "endColumn": 55,
+                        "endOffset": 202
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 4,
+                    "startColumn": 4,
+                    "startOffset": 169,
+                    "endColumn": 50,
+                    "endOffset": 215
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 7,
+                        "startColumn": 4,
+                        "startOffset": 245,
+                        "endColumn": 50,
+                        "endOffset": 291
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 5,
+                    "startColumn": 4,
+                    "startOffset": 220,
+                    "endColumn": 93,
+                    "endOffset": 309
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 8,
+                        "startColumn": 4,
+                        "startOffset": 296,
+                        "endColumn": 93,
+                        "endOffset": 385
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 6,
+                    "startColumn": 4,
+                    "startOffset": 314,
+                    "endColumn": 52,
+                    "endOffset": 362
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 6,
+                        "startColumn": 4,
+                        "startOffset": 192,
+                        "endColumn": 52,
+                        "endOffset": 240
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 7,
+                    "startColumn": 4,
+                    "startOffset": 367,
+                    "endColumn": 41,
+                    "endOffset": 404
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 3,
+                        "startColumn": 4,
+                        "startOffset": 56,
+                        "endColumn": 41,
+                        "endOffset": 93
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 8,
+                    "startColumn": 4,
+                    "startOffset": 409,
+                    "endColumn": 45,
+                    "endOffset": 450
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 4,
+                        "startColumn": 4,
+                        "startOffset": 98,
+                        "endColumn": 45,
+                        "endOffset": 139
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 9,
+                    "startColumn": 4,
+                    "startOffset": 455,
+                    "endColumn": 47,
+                    "endOffset": 498
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 5,
+                        "startColumn": 4,
+                        "startOffset": 144,
+                        "endColumn": 47,
+                        "endOffset": 187
+                    }
+                }
+            },
+            {
+                "to": {
+                    "startLine": 10,
+                    "startColumn": 4,
+                    "startOffset": 503,
+                    "endColumn": 49,
+                    "endOffset": 548
+                },
+                "from": {
+                    "file": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\values\\strings.xml",
+                    "position": {
+                        "startLine": 9,
+                        "startColumn": 4,
+                        "startOffset": 390,
+                        "endColumn": 49,
+                        "endOffset": 435
+                    }
+                }
+            }
+        ]
+    }
+]

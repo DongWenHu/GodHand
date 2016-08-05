@@ -1,0 +1,9 @@
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$2$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$3$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\android\tools\fd\runtime\AppPatchesLoaderImpl.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$VolumeReceiver$1$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$VolumeReceiver$2$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$VolumeReceiver$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$VolumeReceiver$3$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$4$override.class
+CHANGED,D:\AndroidProject\GodHand\AndroidSystemChange\app\build\intermediates\transforms\instantRun\debug\folders\4000\5\enhanced\com\mark\activity\MainActivity$override.class

@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\build\\intermediates\\res\\merged\\debug\\layout\\float_layout.xml",
+        "source": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\layout\\float_layout.xml"
+    },
+    {
+        "merged": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\build\\intermediates\\res\\merged\\debug\\layout\\progress_layout.xml",
+        "source": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\layout\\progress_layout.xml"
+    },
+    {
+        "merged": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\build\\intermediates\\res\\merged\\debug\\layout\\dialog.xml",
+        "source": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\layout\\dialog.xml"
+    },
+    {
+        "merged": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\build\\intermediates\\res\\merged\\debug\\layout\\activity_main.xml",
+        "source": "D:\\AndroidProject\\GodHand\\AndroidSystemChange\\app\\src\\main\\res\\layout\\activity_main.xml"
+    }
+]
