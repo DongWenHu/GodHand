@@ -1,5 +1,6 @@
 require 'GHLib'
 require 'Configs'
+require 'DoTask'
 json = require 'json'
 
 local task_file_recv_path = getPath().."/tmp/task_file.tar"
@@ -92,6 +93,7 @@ function main()
 end
 
 main()
--- dt = dofile(getPath().."/lua/DoTask.lua")
--- dt.doTask()
-
+-- AutomatorApi:screenOn()
+-- DoTask.doTask()
+-- AutomatorApi:mSleep(5000)
+-- AutomatorApi:screenOff()

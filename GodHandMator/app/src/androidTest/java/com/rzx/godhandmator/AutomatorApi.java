@@ -3,6 +3,7 @@ package com.rzx.godhandmator;
 import android.app.UiAutomation;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.RemoteException;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
@@ -981,12 +982,9 @@ public class AutomatorApi {
      * @return
      */
     public static boolean fileExists(String filename) throws IOException {
-        String result = executeShellCommand("ls " + filename);
-        if(result.contains("No such file or directory")){
-            return false;
-        }
-
-        return true;
+        File file = new File(filename);
+        boolean isExists = file.exists();
+        return isExists;
     }
 
     /**
@@ -1056,5 +1054,20 @@ public class AutomatorApi {
         inputFile.read(buffer);
         inputFile.close();
         return Base64.encodeToString(buffer,Base64.DEFAULT);
+    }
+
+    /**
+     * Make toast text.
+     *
+     * @param str
+     */
+    public static void toast(String str) throws IOException {
+        File destDir = new File("/mnt/sdcard/GodHand/tmp");
+        if (!destDir.exists()) {
+            destDir.mkdirs();
+        }
+
+        writeFile("/mnt/sdcard/GodHand/tmp/toastText.txt", str);
+        executeShellCommand("am startservice -n com.rzx.godhandmator/.services.ActionService");
     }
 }

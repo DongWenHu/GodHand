@@ -24,7 +24,7 @@ function WechatOps.login(usr, pwd)
 	if AutomatorApi:fileExists(cache_file) then
 		ret,msg = WechatOps.loginByCache(cache_file, usr, pwd)
 	else
-		ret,msg = WechatOps.loginByInput(strCurUsr, strCurPwd)
+		ret,msg = WechatOps.loginByInput(usr, pwd)
 	end
 	
 	if ret then
@@ -36,6 +36,7 @@ end
 
 --缓存方式登录
 function WechatOps.loginByCache(cache_file, usr, pwd)
+	AutomatorApi:toast("loginByCache\n"..usr)
 	local uid = ""
 	uid = AutomatorApi:executeShellCommand("busybox ls -l /data/data|grep com.tencent.mm|busybox awk '{print $3}'")
 	AutomatorApi:executeShellCommand("rm -fr /data/data/com.tencent.mm/*")
@@ -55,7 +56,7 @@ function WechatOps.loginByCache(cache_file, usr, pwd)
 		   AutomatorApi:waitNewWindowByTextEqual('微信', 1) then
 			return true, 'Login succeeded.'
 		end
-		timeout = timeout - 500
+		timeout = timeout - 4000
 		AutomatorApi:mSleep(500)
 	end
 	
@@ -64,8 +65,9 @@ end
 
 --输入方式登录
 function WechatOps.loginByInput(usr, pwd)
+	AutomatorApi:toast("loginByInput\n"..usr)
 	AutomatorApi:executeShellCommand("am start --activity-no-history com.tencent.mm/.ui.account.LoginUI")
-	ret = AutomatorApi:waitNewWindowByTextContain("登录微信", 6000)
+	ret = AutomatorApi:waitNewWindowByTextContain("登录微信", 10000)
 	if(ret == false) then return false,"Login failed. Can't find login UI." end
 	AutomatorApi:setTextByClass("android.widget.EditText", usr, 0)
 	AutomatorApi:setTextByClass("android.widget.EditText", pwd, 1)
@@ -204,21 +206,35 @@ function WechatOps.addAlias(alias)
 	AutomatorApi:executeShellCommand("am start --activity-no-history -n com.tencent.mm/.ui.chatting.ChattingUI --es Chat_User '"..alias.."'")
 	
 	repeat
-		ret = AutomatorApi:waitNewWindowByTextEqual('添加', 2000)
+		ret = AutomatorApi:waitNewWindowByTextEqual('添加', 6000)
 		if ret == false then break end
 		
 		AutomatorApi:clickByTextEqual("添加", 0)
-		if AutomatorApi:waitNewWindowByTextEqual('验证申请', 4000) then
+		if AutomatorApi:waitNewWindowByTextEqual('验证申请', 15000) then
 			AutomatorApi:inputText("Hi~ 您好~")
 			AutomatorApi:clickByTextEqual("确定", 0)
+			AutomatorApi:mSleep(5000)
 			break
 		end
 	until(true)
 	return true, "Add "..alias.." succeeded."
 end
 
+function WechatOps.getRandText(filename)
+	local s = io.open(filename)
+	
+	local table_lines = {}
+	local line
+	for line in s:lines() do 
+		table.insert(table_lines, line)
+	end
+	
+	return table_lines[math.random(#table_lines)]
+end
+
 --发送单聊
 function WechatOps.sendMsg(who, message)
+	-- message = WechatOps.getRandText(getPath().."/res/sns_msg.txt")
 	local ret,msg
 	ret = true
 	msg = 'Send message succeeded.'
@@ -234,6 +250,8 @@ function WechatOps.sendMsg(who, message)
 		
 		AutomatorApi:clickByClass("android.widget.EditText", 0)
 		AutomatorApi:setTextByClass("android.widget.EditText", "", 0)
+		
+		-- local date_ = AutomatorApi:executeShellCommand("date")
 		AutomatorApi:inputText(message)
 		AutomatorApi:clickByTextEqual("发送", 0)
 	until(true)
@@ -452,9 +470,9 @@ function WechatOps.doEnd()
 		AutomatorApi:executeShellCommand("cp -a /data/data/com.tencent.mm/files "..cache_file)
 		AutomatorApi:executeShellCommand("cp -a /data/data/com.tencent.mm/shared_prefs "..cache_file)
 		AutomatorApi:executeShellCommand("tar -cf "..cache_file..".tar "..WechatOps.strCurUsr.." -C "..getPath().."/res/cache/com.tencent.mm/")
-		AutomatorApi:executeShellCommand("curl -F 'filename=@"..cache_file..".tar' "
-			.."-d \"{'task_id':'"..g_task_id.."'}\" "
-			..g_conf_upload_file_url)
+		-- AutomatorApi:executeShellCommand("curl -F 'filename=@"..cache_file..".tar' "
+			-- .."-d \"{'task_id':'"..g_task_id.."'}\" "
+			-- ..g_conf_upload_file_url)
 	end
 	return true, "End succeeded."
 end

@@ -57,7 +57,7 @@ end
 
 function main()
 	AutomatorApi:executeShellCommand("settings put system screen_off_timeout 2147483647")
-	AutomatorApi:executeShellCommand("settings put system screen_brightness 10")
+	AutomatorApi:executeShellCommand("settings put system screen_brightness 100")
 		
 	setLockClose()
 	setXposedInstaller()

@@ -25,7 +25,7 @@ end
 
 
 function DoTask.doTask(tb_data)
-	local jsdata = AutomatorApi:readFile(getPath().."/tmp/aaa.json")
+	local jsdata = AutomatorApi:readFile(getPath().."/tmp/test.json")
 	tb_data = json.decode(jsdata)
 	local task_id = tb_data["task_id"]
 	local task_type = tb_data["task_type"]
@@ -36,6 +36,20 @@ function DoTask.doTask(tb_data)
 	local tb_task = {}
 	
 	tb_task = tb_data["cmd"]
+	
+	-- --test begin
+	-- local test_count = {
+		-- {"tUOV56899812", "1117Cd70c", "866980026778864"},
+		-- {"AiLM95577634", "9e67Cd409", "866980026009112"}
+	-- }
+	
+	-- math.randomseed(os.time())
+	-- local rand_count = math.random(2)
+	-- tb_task[1]["op"][2] = test_count[rand_count][3]
+	-- tb_task[2]["op"][2] = test_count[rand_count][1]
+	-- tb_task[2]["op"][3] = test_count[rand_count][2]
+	-- --test end
+	AutomatorApi:toast(tb_task[1]["op"][2].."\n"..tb_task[2]["op"][1].."\n"..tb_task[2]["op"][2])
 	for var = 1, #tb_task do
 		ret, msg = DoTask.dispatchTask(tb_task[var]["op"])
 		if ret == false then
@@ -72,12 +86,6 @@ function DoTask.doTask(tb_data)
 	str_post = json.encode(result)
 	local headers = 'Content-Type:application/json;Content-Length:'..#str_post
 	sRet = AutomatorApi:httpPostWithHeader(g_conf_task_result_url, str_post, headers)
-	-- sRet = AutomatorApi:executeShellCommand("curl -d '"..str_post
-				-- .." -H 'Content-Type: application/json'"
-				-- .." -H 'Content-Length: "..#str_post.."' "
-				-- ..g_conf_task_result_url)
 	sRet = sRet~="" and sRet or "post failed"
 	AutomatorApi:log("main", "post result status("..tostring(result["status"]).."): "..sRet)
 end
-
-return DoTask

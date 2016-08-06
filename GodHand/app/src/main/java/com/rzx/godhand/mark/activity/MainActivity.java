@@ -145,8 +145,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 
-	private final static String apkPath = "mnt/sdcard/markapk/";
-	private final static String luaPath = "mnt/sdcard/GodHand/";
+	private final static String apkPath = "/mnt/sdcard/markapk/";
+	private final static String luaPath = "/mnt/sdcard/GodHand/";
+    private final static String binPath = "/mnt/sdcard/tmp/";
 
 	public void initPhone() {
 
@@ -160,21 +161,21 @@ public class MainActivity extends Activity implements OnClickListener {
 				// return;
 				// 删除所有用户apk
 				AppInstallManager.uninstallAllUser(MainActivity.this);
-				// apk写入sdcard
+
+                // 删除apkPath所有文件
+                RootCmd.execRootCmd("rm -fr " + apkPath);
+                // apk写入sdcard
 				Assets.CopyAssets(MainActivity.this, "apk", apkPath);
 				// 安装apk
 				AppInstallManager.installDir(apkPath);
 
-//				// 判断mnt/sdcard/TouchSprite/是否存在
-//				File mWorkingPath = new File(luaPath);
-//				// 如果文件路径不存在
-//				if (!mWorkingPath.exists()) {
-//					// 创建文件夹
-//					mWorkingPath.mkdirs();
-//				}
+                // 安装busybox等相关文件
+                Assets.CopyAssets(MainActivity.this, "bin", binPath);
+                RootCmd.execRootCmd("mount -o rw,remount /system");
+                RootCmd.execRootCmd("cp -a "+binPath + "busybox /system/xbin");
+                RootCmd.execRootCmd("chmod 777 /system/xbin/busybox");
+                RootCmd.execRootCmd("mount -o ro,remount /system");
 
-				File tmpFile = new File("mnt/sdcard/tmp");
-				deleteFile(tmpFile);
 				// 脚本 写入sdcard
 				Assets.CopyAssets(MainActivity.this, "godhand", luaPath);
 
@@ -185,7 +186,7 @@ public class MainActivity extends Activity implements OnClickListener {
 //				} catch (InterruptedException e) {
 //					// TODO Auto-generated catch block
 //					e.printStackTrace();
-//				}
+//				}d
                 RootCmd.execRootCmd("echo InitDevice.lua > " + luaPath + "/tmp/run_file");
                 RootCmd.execRootCmd(START_UIAUTOMATOR);
                 Intent intent = new Intent(getApplicationContext(), FxService.class);
