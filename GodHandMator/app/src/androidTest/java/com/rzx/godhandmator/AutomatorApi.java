@@ -1,10 +1,13 @@
 package com.rzx.godhandmator;
 
 import android.app.UiAutomation;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Point;
+import android.media.MediaScannerConnection;
 import android.os.RemoteException;
+import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.support.test.uiautomator.By;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
@@ -12,12 +15,12 @@ import android.support.test.uiautomator.UiObjectNotFoundException;
 import android.support.test.uiautomator.UiSelector;
 import android.support.test.uiautomator.Until;
 import android.util.Base64;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import org.apache.http.util.EncodingUtils;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -25,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
@@ -35,8 +39,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Administrator on 2016/7/24/024.
@@ -387,9 +389,10 @@ public class AutomatorApi {
     }
 
     /**
-     * Find object by text, and click the object if the object is clickable.
-     * @param text contains text
-     * @param index
+     * 通过包含文本内容找到组件并点击
+     *
+     * @param text 包含文本内容
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return true if successful, else return false
      * @throws UiObjectNotFoundException
      */
@@ -403,9 +406,10 @@ public class AutomatorApi {
     }
 
     /**
-     * Find object by text, and click the object if the object is clickable.
-     * @param text equal text
-     * @param index
+     * 通过等值文本内容找到组件并点击
+     *
+     * @param text 等值文本内容
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return true if successful, else return false
      * @throws UiObjectNotFoundException
      */
@@ -419,8 +423,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param cls
-     * @param index
+     * 通过类名找到组件找到组件并点击， 类名可通过DDMS获取
+     *
+     * @param cls 类名
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return
      * @throws UiObjectNotFoundException
      */
@@ -434,9 +440,77 @@ public class AutomatorApi {
     }
 
     /**
-     * @param x
-     * @param y
-     * @param time
+     * 通过资源ID找到组件找到组件并点击， 资源ID可通过DDMS获取
+     *
+     * @param resId 资源ID
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean clickByResId(String resId, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().resourceId(resId).instance(index));
+        object.click();
+        return true;
+    }
+
+
+    /**
+     * 通过资源ID找到组件找到组件并获取文本内容， 资源ID可通过DDMS获取
+     *
+     * @param resId 资源ID
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
+     * @return 获取到的文本内容
+     * @throws UiObjectNotFoundException
+     */
+    public static String getTextByResId(String resId, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return "";
+
+        UiObject object = new UiObject(new UiSelector().resourceId(resId).instance(index));
+        return object.getText();
+    }
+
+    /**
+     * 通过类名找到组件并获取文本内容，类名可通过DDMS获取
+     *
+     * @param cls 类名
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
+     * @return 获取到的文本内容
+     * @throws UiObjectNotFoundException
+     */
+    public static String getTextByClass(String cls, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return "";
+
+        UiObject object = new UiObject(new UiSelector().className(cls).instance(index));
+        return object.getText();
+    }
+
+    /**
+     * 通过包含文本内容匹配找到组件并获取文本内容
+     *
+     * @param str 包含的文本内容
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
+     * @return 获取到的文本内容
+     * @throws UiObjectNotFoundException
+     */
+    public static String getTextByTextContain(String str, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return "";
+
+        UiObject object = new UiObject(new UiSelector().textContains(str).instance(index));
+        return object.getText();
+    }
+
+    /**
+     * 通过坐标长按点击
+     *
+     * @param x 坐标x
+     * @param y 坐标y
+     * @param time 长按时间
      * @return
      */
     public static Boolean longClick(int x, int y, int time){
@@ -447,8 +521,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text contains text
-     * @param index
+     * 通过包含文本内容找到组件并长按
+     *
+     * @param text 包含匹配文本
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return
      * @throws UiObjectNotFoundException
      */
@@ -463,8 +539,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text equals text
-     * @param index
+     * 通过等值文本内容找到组件并长按
+     *
+     * @param text 等值匹配内容
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return
      * @throws UiObjectNotFoundException
      */
@@ -479,8 +557,28 @@ public class AutomatorApi {
     }
 
     /**
-     * @param pkg
-     * @param timeout
+     * 通过资源ID找到组件并长按，资源ID可通过DDMS获取
+     *
+     * @param resId 资源ID
+     * @param index 如果找到多个相同项，取第几个的索引，从0开始计算。
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean longClickByResId(String resId, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().resourceId(resId).instance(index));
+
+        object.longClick();
+        return true;
+    }
+
+    /**
+     * 通过包名匹配等待窗口出现，包名可通过DDMS获取
+     *
+     * @param pkg 包名
+     * @param timeout 超时时间
      * @return
      */
     public static Boolean waitNewWindowByPkg(String pkg, int timeout){
@@ -491,8 +589,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text Contains text
-     * @param timeout
+     * 通过包含匹配文本内容等待窗口出现，文本内容即界面组件显示的内容或通过DDMS获取
+     *
+     * @param text 包含匹配文本内容
+     * @param timeout 超时时间
      * @return
      */
     public static Boolean waitNewWindowByTextContain(String text, int timeout){
@@ -503,8 +603,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text Equals text
-     * @param timeout
+     * 通过等值匹配文本内容等待窗口出现，文本内容即界面组件显示的内容或通过DDMS获取
+     *
+     * @param text 等值匹配文本内容
+     * @param timeout 超时时间
      * @return
      */
     public static Boolean waitNewWindowByTextEqual(String text, int timeout){
@@ -515,8 +617,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param desc Contains description
-     * @param timeout
+     * 通过包含匹配描述字段等待窗口出现，描述字段内容可通过DDMS获取
+     *
+     * @param desc 包含匹配描述字段
+     * @param timeout 超时时间
      * @return
      */
     public static Boolean waitNewWindowByDescContain(String desc, int timeout){
@@ -527,8 +631,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param desc Equals description
-     * @param timeout
+     * 通过等值匹配描述字段等待窗口出现，描述字段内容可通过DDMS获取
+     *
+     * @param desc 等值匹配描述字段
+     * @param timeout 超时时间
      * @return
      */
     public static Boolean waitNewWindowByDescEqual(String desc, int timeout){
@@ -539,9 +645,23 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text Contains text
-     * @param textContent
-     * @param index
+     * @param resId
+     * @param timeout
+     * @return
+     */
+    public static Boolean waitNewWindowByResId(String resId, int timeout){
+        if(uiDevice == null)
+            return false;
+
+        return uiDevice.wait(Until.hasObject(By.res(resId)), timeout);
+    }
+
+    /**
+     * 通过包含匹配文本内容来设置文本框内容，文本即该组件上显示的内容，或者通过DDMS获取.
+     *
+     * @param text 包含匹配的文本内容
+     * @param textContent 需设置的文本内容
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return
      * @throws UiObjectNotFoundException
      */
@@ -556,9 +676,11 @@ public class AutomatorApi {
     }
 
     /**
-     * @param text Equals text
-     * @param textContent
-     * @param index
+     * 通过等值匹配文本内容来设置文本框内容，文本即该组件上显示的内容，或者通过DDMS获取.
+     *
+     * @param text 等值匹配的内容
+     * @param textContent 需要设置的内容
+     * @param index 如果找到多个相同内容的项，取第几个的索引，从0开始计算。
      * @return
      * @throws UiObjectNotFoundException
      */
@@ -573,9 +695,11 @@ public class AutomatorApi {
     }
 
     /**
-     * @param cls
-     * @param text
-     * @param index
+     *  通过类设置文本框内容，类通过DDMS可以获取.
+     *
+     * @param cls 类名
+     * @param text 需要设置的内容
+     * @param index 如果找到多个相同类的项，取第几个的索引，从0开始计算。
      * @return
      * @throws UiObjectNotFoundException
      */
@@ -587,18 +711,33 @@ public class AutomatorApi {
         object.click();
         object.setText(text);
 
-//        List<UiObject2> ret = new ArrayList<UiObject2>();
-//
-//        List<UiObject2> lst =  uiDevice.findObjects(By.clazz(cls));
-//        if(lst.size() <= index)
-//            return false;
-//
-//        lst.get(index).setText(text);
         return true;
     }
 
     /**
-     * @param str
+     * 通过资源ID设置文本框内容，资源ID通过DDMS可以获取.
+     *
+     * @param resId 资源ID
+     * @param text 需要设置的内容
+     * @param index 如果找到多个相同资源ID的项，取第几个的索引，从0开始计算。
+     * @return
+     * @throws UiObjectNotFoundException
+     */
+    public static Boolean setTextByResId(String resId, String text, int index) throws UiObjectNotFoundException {
+        if(uiDevice == null)
+            return false;
+
+        UiObject object = new UiObject(new UiSelector().resourceId(resId).instance(index));
+        object.click();
+        object.setText(text);
+
+        return true;
+    }
+
+    /**
+     * 在编辑框输入一串字符串。
+     *
+     * @param str 字符串内容
      * @return
      */
     public static Boolean inputText(String str) throws IOException {
@@ -619,8 +758,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param fileName
-     * @return
+     * 读一个文件内容。
+     *
+     * @param fileName 要读的文件名
+     * @return 读取后的内容
      * @throws IOException
      */
     public static String readFile(String fileName) throws IOException{
@@ -635,8 +776,10 @@ public class AutomatorApi {
     }
 
     /**
-     * @param fileName
-     * @param writestr
+     * 覆盖方式写一个文件，如果文件不存在，将创建一个文件。
+     *
+     * @param fileName 文件名
+     * @param writestr 文件内容
      * @throws IOException
      */
     public static void writeFile(String fileName, String writestr) throws IOException{
@@ -773,10 +916,33 @@ public class AutomatorApi {
     }
 
     /**
-     * @param file
-     * @param content
+     * 以覆盖方式记录日志，日志生成的目录在/mnt/sdcard/GodHand/log/
+     *
+     * @param file 日志文件名,无需后缀名，自动扩展“.log”。
+     * @param content 日志内容
      */
     public static void log(String file, String content) throws IOException {
+        File destDir = new File("/mnt/sdcard/GodHand/log");
+        if (!destDir.exists()){
+            destDir.mkdirs();
+        }
+
+        Date date=new Date();
+
+        String logfile = "/mnt/sdcard/GodHand/log/"+file+".log";
+        String logContent = String.format("[%tF %tT]: %s\n", date, date, content);
+        FileWriter writer = new  FileWriter(logfile,  false);
+        writer.write(logContent);
+        writer.close();
+    }
+
+    /**
+     * 以追加方式记录日志，日志生成的目录在/mnt/sdcard/GodHand/log/
+     *
+     * @param file 日志文件名,无需后缀名，自动扩展“.log”。
+     * @param content 日志内容
+     */
+    public static void logAppend(String file, String content) throws IOException {
         File destDir = new File("/mnt/sdcard/GodHand/log");
         if (!destDir.exists()){
             destDir.mkdirs();
@@ -792,13 +958,12 @@ public class AutomatorApi {
     }
 
     /**
+     * 建议使用luasocket插件取代该方法, 更高效，更多的操作方式
      * 向指定URL发送GET方法的请求
      *
-     * @param url
-     *            发送请求的URL
-     * @param param
-     *            请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
-     * @return URL 所代表远程资源的响应结果
+     * @param url 发送请求的URL
+     * @param param 请求参数，请求参数应该是 name1=value1&name2=value2 的形式。
+     * @return URL 所代表远程资源的响应结果，如果请求发生错误返回 "" 空字符串
      */
     public static String httpGet(String url, String param) {
         String result = "";
@@ -815,19 +980,16 @@ public class AutomatorApi {
                     "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
             // 建立实际的连接
             connection.connect();
-            // 获取所有响应头字段
-            Map<String, List<String>> map = connection.getHeaderFields();
-            // 遍历所有的响应头字段
-            for (String key : map.keySet()) {
-                System.out.println(key + "--->" + map.get(key));
+
+            byte[] buf = new byte[1024];
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            InputStream is = connection.getInputStream();
+
+            for (int i; (i = is.read(buf)) != -1;) {
+                baos.write(buf, 0, i);
             }
-            // 定义 BufferedReader输入流来读取URL的响应
-            in = new BufferedReader(new InputStreamReader(
-                    connection.getInputStream()));
-            String line;
-            while ((line = in.readLine()) != null) {
-                result += line;
-            }
+            result = baos.toString("UTF-8");
+
         } catch (Exception e) {
             System.out.println("发送GET请求出现异常！" + e);
             e.printStackTrace();
@@ -846,13 +1008,13 @@ public class AutomatorApi {
     }
 
     /**
+     * 建议使用luasocket插件取代该方法, 更高效，更多的操作方式
      * 向指定 URL 发送POST方法的请求
      *
-     * @param url
-     *            发送请求的 URL
-     * @param param
+     * @param url 发送请求的 URL
+     * @param param    Post 内容
      *
-     * @return 所代表远程资源的响应结果
+     * @return 所代表远程资源的响应结果，如果请求发生错误返回 "" 空字符串
      */
     public static String httpPost(String url, String param) {
         PrintWriter out = null;
@@ -905,9 +1067,16 @@ public class AutomatorApi {
     }
 
     /**
-     * @param url
-     * @am
-     * @return
+     * 建议使用luasocket插件取代该方法, 更高效，更多的操作方式
+     * 自定义头部发送Post请求
+     *
+     * 头部格式: Content-Type:application/json;Content-Length:20
+     *          以分号分割多个头部信息, 冒号分割键值。
+     *
+     * @param url 发送请求的 URL
+     * @param postData Post内容
+     * @param header 以分号分割多个头部信息, 冒号分割键值。
+     * @return 所代表远程资源的响应结果，如果请求发生错误返回 "" 空字符串
      */
     public static String httpPostWithHeader(String url, String postData, String header) {
         PrintWriter out = null;
@@ -967,17 +1136,17 @@ public class AutomatorApi {
     }
 
     /**
-     * @param ms
+     * Sleep.
+     *
+     * @param ms Millisecond.
      */
     public static void mSleep(int ms){
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        SystemClock.sleep(ms);
     }
 
     /**
+     * 判断文件是否存在
+     * 注意:此方法只能判断sdcard中的文件是否存在，其他目录会没有权限。
      * @param filename
      * @return
      */
@@ -988,6 +1157,8 @@ public class AutomatorApi {
     }
 
     /**
+     * Base64 encode for string.
+     *
      * @param str
      * @return
      */
@@ -996,6 +1167,8 @@ public class AutomatorApi {
     }
 
     /**
+     *  Base64 decode for string.
+     *
      * @param str
      * @return
      */
@@ -1004,6 +1177,8 @@ public class AutomatorApi {
     }
 
     /**
+     * Md5 32 bit, lowercase letters.
+     *
      * @param str
      * @return
      */
@@ -1031,6 +1206,8 @@ public class AutomatorApi {
     }
 
     /**
+     * Md5 16 bit, lowercase letters.
+     *
      * @param str
      * @return
      */
@@ -1044,6 +1221,8 @@ public class AutomatorApi {
     }
 
     /**
+     * Base64 encode for file.
+     *
      * @param filename
      * @return
      */
@@ -1070,4 +1249,28 @@ public class AutomatorApi {
         writeFile("/mnt/sdcard/GodHand/tmp/toastText.txt", str);
         executeShellCommand("am startservice -n com.rzx.godhandmator/.services.ActionService");
     }
+
+    /**
+     * 删除图片数据库所有图片，对应存储中的图片也会被删除
+     *
+     */
+    public static void delImagesMedia(){
+        ContentResolver resolver = context.getContentResolver();
+        resolver.delete(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, null);
+    }
+
+    /**
+     * 通知更新图片数据库中的指定文件的图片
+     *
+     * @param file 指定要更新的文件
+     */
+    public static void notifyScanImageFile(String file){
+        MediaScannerConnection.scanFile(context, new String[] { file }, null, null);
+    }
 }
+
+
+
+
+
+

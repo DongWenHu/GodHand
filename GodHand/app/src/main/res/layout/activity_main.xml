@@ -9,20 +9,12 @@
     tools:context="com.rzx.godhand.mark.activity.MainActivity" >
 
     <Button
-        android:id="@+id/initButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:text="@string/button_init" />
-
-    <Button
         android:id="@+id/serviceButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/initButton"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="50dp"
-        android:text="@string/button_service" />
+        android:text="@string/button_service"
+        android:layout_centerVertical="true" />
 
 </RelativeLayout>

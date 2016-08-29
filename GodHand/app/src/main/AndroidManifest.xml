@@ -40,12 +40,6 @@
             </intent-filter>
         </service>
 
-        <service android:name="com.rzx.godhand.mark.timer.service.RunScriptService" >
-            <intent-filter>
-                <action android:name="com.rzx.godhand.mark.timer.service.RunScriptService.action" />
-            </intent-filter>
-        </service>
-
         <receiver
             android:name="com.rzx.godhand.mark.timer.receiver.BootBroadcastReceiver"
             android:exported="false" >
@@ -55,7 +49,6 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.rzx.godhand.ui.service.FxService" />
         <service
             android:name="com.rzx.godhand.mark.accessibility.MyAccessibilityService"
             android:label="@string/acc_service_name"

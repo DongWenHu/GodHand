@@ -22,25 +22,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.rzx.godhand.mark.appinstall.AppInstallManager;
-import com.rzx.godhand.mark.cmd.RootCmd;
 import com.rzx.godhand.R;
-import com.rzx.godhand.mark.timer.service.RunScriptService;
+import com.rzx.godhand.mark.cmd.Cmd;
 import com.rzx.godhand.mark.timer.service.UploadPOIService;
 import com.rzx.godhand.mark.timer.utils.Constants;
 import com.rzx.godhand.mark.timer.utils.ServiceUtil;
-import com.rzx.godhand.mark.util.Assets;
 import com.rzx.godhand.mark.util.PreferenceMgr;
 import com.rzx.godhand.mark.util.ThreadPool;
-import com.rzx.godhand.ui.service.FxService;
-
-import java.io.File;
 
 public class MainActivity extends Activity implements OnClickListener {
 
     private static final String TAG = "MainActivity";
 
-	Button initButton;
 	Button serviceButton;
 
     private static final int MSG_TOAST = 0x1000001;
@@ -75,41 +68,19 @@ public class MainActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		String s =Settings.System.ANDROID_ID;
 		setContentView(R.layout.activity_main);
-		initButton = (Button) findViewById(R.id.initButton);
+
 		serviceButton = (Button) findViewById(R.id.serviceButton);
-		initButton.setOnClickListener(this);
 		serviceButton.setOnClickListener(this);
 
 		RequestURL = PreferenceMgr.getSharedValue(this, "serverIp",
-				"172.16.21.193");
+				"192.168.70.97");
 		if (!ServiceUtil.isServiceRunning(this, Constants.POI_SERVICE)) {
 			ServiceUtil.invokeTimerService(this, UploadPOIService.class, Constants.POI_SERVICE_ACTION);
 		}
 
         mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         registerVolumeChangeReceiver();
-		// Log.e("zmark_HeartData", "HeartData:"
-		// + HeartData.getInstance().getData(this));
-		//
-		// RootCmd.execRootCmd("settings put system screen_off_timeout 2147483647");
 	}
-
-    public static String bytesToHex(byte[] bytes) {
-        StringBuffer md5str = new StringBuffer();
-        //把数组每一字节换成16进制连成md5字符串
-        int digital;
-        for (int i = 0; i < bytes.length; i++) {
-            digital = bytes[i];
-            if(digital < 0) {
-                digital += 256;
-            }
-            if(digital < 16){
-                md5str.append("0");
-            }
-            md5str.append(Integer.toHexString(digital));
-        }
-        return md5str.toString();
-    }
 
 	@Override
 	protected void onStart() {
@@ -127,13 +98,6 @@ public class MainActivity extends Activity implements OnClickListener {
 		// TODO Auto-generated method stub
 
 		switch (v.getId()) {
-		case R.id.initButton:
-			Intent intent = new Intent(this, FxService.class);
-			startService(intent);
-			initPhone();
-
-
-			break;
 		case R.id.serviceButton:
 			Intent serviceIntent = new Intent(
 					Settings.ACTION_ACCESSIBILITY_SETTINGS);
@@ -142,74 +106,6 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		default:
 			break;
-		}
-	}
-
-	private final static String apkPath = "/mnt/sdcard/markapk/";
-	private final static String luaPath = "/mnt/sdcard/GodHand/";
-    private final static String binPath = "/mnt/sdcard/tmp/";
-
-	public void initPhone() {
-
-		ThreadPool.add(new Runnable() {
-
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-
-				// if (FirstPreferences.isFirstRun(this))
-				// return;
-				// 删除所有用户apk
-				AppInstallManager.uninstallAllUser(MainActivity.this);
-
-                // 删除apkPath所有文件
-                RootCmd.execRootCmd("rm -fr " + apkPath);
-                // apk写入sdcard
-				Assets.CopyAssets(MainActivity.this, "apk", apkPath);
-				// 安装apk
-				AppInstallManager.installDir(apkPath);
-
-                // 安装busybox等相关文件
-                Assets.CopyAssets(MainActivity.this, "bin", binPath);
-                RootCmd.execRootCmd("mount -o rw,remount /system");
-                RootCmd.execRootCmd("cp -a "+binPath + "busybox /system/xbin");
-                RootCmd.execRootCmd("chmod 777 /system/xbin/busybox");
-                RootCmd.execRootCmd("mount -o ro,remount /system");
-
-				// 脚本 写入sdcard
-				Assets.CopyAssets(MainActivity.this, "godhand", luaPath);
-
-				// 设置手机永不锁屏脚本实现 或者代码实现
-//				try {
-//					TouchScript.doRunScript(MainActivity.this,
-//							"init_device.lua");
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}d
-                RootCmd.execRootCmd("echo InitDevice.lua > " + luaPath + "/tmp/run_file");
-                RootCmd.execRootCmd(START_UIAUTOMATOR);
-                Intent intent = new Intent(getApplicationContext(), FxService.class);
-                stopService(intent);
-			}
-		});
-
-	}
-
-	// 递归删除文件夹
-	private void deleteFile(File file) {
-		if (file.exists()) {// 判断文件是否存在
-			if (file.isFile()) {// 判断是否是文件
-				file.delete();// 删除文件
-			} else if (file.isDirectory()) {// 否则如果它是一个目录
-				File[] files = file.listFiles();// 声明目录下所有的文件 files[];
-				for (int i = 0; i < files.length; i++) {// 遍历目录下所有的文件
-					this.deleteFile(files[i]);// 把每个文件用这个方法进行迭代
-				}
-				file.delete();// 删除文件夹
-			}
-		} else {
-			System.out.println("所删除的文件不存在");
 		}
 	}
 
@@ -272,55 +168,40 @@ public class MainActivity extends Activity implements OnClickListener {
                     mOldVolume = intent.getIntExtra("android.media.EXTRA_PREV_VOLUME_STREAM_VALUE", currVolume);
                 }
 
-                if (currVolume == 0 || currVolume < mOldVolume) {
-                    if (mIsAlarmStarted) {
-                        toast("请按音量+键关闭正在循环执行的脚本");
-                    } else {
-                        if ((System.currentTimeMillis() - mTimeout) > 300) {
+                if ((System.currentTimeMillis() - mTimeout) > 500) {
+                    if (currVolume == 0 || currVolume < mOldVolume) {
+                        if (mIsAlarmStarted) {
+                            toast("请按音量+键关闭正在循环执行的脚本");
+                        } else {
                             if (!mIsStarted) {
                                 toast("启动脚本");
-                                new Thread(new Runnable() {
+                                Runnable runner = new Runnable() {
                                     @Override
                                     public void run() {
-//                                        RootCmd.execRootCmd("echo main.lua > " + luaPath + "/tmp/run_file");
-                                        RootCmd.execRootCmd(START_UIAUTOMATOR);
+//                                        Cmd.execRootCmd("echo main.lua > " + luaPath + "/tmp/run_file");
+                                        Cmd.execRootCmd(START_UIAUTOMATOR);
                                         mIsStarted = false;
                                         toast("脚本执行结束");
                                     }
-                                }).start();
+                                };
+
+                                ThreadPool.add(runner);
                             } else {
                                 toast("停止脚本");
-                                new Thread(new Runnable() {
+                                Runnable runner = new Runnable() {
                                     @Override
                                     public void run() {
-                                        RootCmd.execRootCmd(STOP_UIAUTOMATOR1);
-                                        RootCmd.execRootCmd(STOP_UIAUTOMATOR2);
+                                        Cmd.execRootCmd(STOP_UIAUTOMATOR1);
+                                        Cmd.execRootCmd(STOP_UIAUTOMATOR2);
                                     }
-                                }).start();
+                                };
+
+                                ThreadPool.add(runner);
                             }
                             mIsStarted = !mIsStarted;
                         }
                     }
-                } else if(currVolume == maxVolume || currVolume > mOldVolume) {
-                    if (mIsAlarmStarted) {
-                        toast("关闭循环执行脚本");
-                        ServiceUtil.cancleAlarmManager(context, RunScriptService.class, Constants.RUN_SCRIPT_SERVICE_ACTION);
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                RootCmd.execRootCmd(STOP_UIAUTOMATOR1);
-                                RootCmd.execRootCmd(STOP_UIAUTOMATOR2);
-                            }
-                        }).start();
-                    }
-                    else{
-                        toast("开启循环执行脚本");
-//                        RootCmd.execRootCmd("echo main.lua > " + luaPath + "/tmp/run_file");
-                        ServiceUtil.invokeTimerService(context, RunScriptService.class, Constants.RUN_SCRIPT_SERVICE_ACTION);
-                    }
-                    mIsAlarmStarted = !mIsAlarmStarted;
                 }
-
                 mOldVolume = currVolume;
                 mTimeout = System.currentTimeMillis();
             }

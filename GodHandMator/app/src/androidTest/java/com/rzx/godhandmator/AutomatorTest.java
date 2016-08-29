@@ -1,16 +1,17 @@
 package com.rzx.godhandmator;
 
 import android.app.UiAutomation;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.media.MediaScannerConnection;
 import android.os.RemoteException;
+import android.provider.MediaStore;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.Configurator;
 import android.support.test.uiautomator.InstrumentationUiAutomatorBridge;
 import android.support.test.uiautomator.UiDevice;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.keplerproject.luajava.JavaFunction;
@@ -78,8 +79,9 @@ public class AutomatorTest {
     }
 
     @Test
-    public void testCheckPreconditions() throws InterruptedException, IOException {
-        Assert.assertThat(mDevice, CoreMatchers.notNullValue());
+    public void testRun() throws InterruptedException, IOException, LuaException {
+        String exceptionLua = "/mnt/sdcard/GodHand/lua/OnException.lua";
+        File exceptionFile = new File(exceptionLua);
 
         LuaState L = LuaStateFactory.newLuaState();
         setLuaState(L);
@@ -96,9 +98,14 @@ public class AutomatorTest {
             StringWriter sw = new StringWriter();
             e.printStackTrace(new PrintWriter(sw, true));
             AutomatorApi.log("system", sw.toString());
+
+            if (exceptionFile.exists()) {
+                evalLua(L, exceptionLua);
+            }
         }
 
-        android.os.Process.killProcess(android.os.Process.myPid());
+        AutomatorApi.executeShellCommand("busybox ps -ef|busybox grep app_process |busybox grep -v 'grep'|busybox grep instrument|busybox awk '{print $1}'|busybox xargs kill -9");
+//        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     /**

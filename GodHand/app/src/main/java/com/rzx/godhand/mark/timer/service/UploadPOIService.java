@@ -4,12 +4,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+import com.rzx.godhand.mark.cmd.Cmd;
 import com.rzx.godhand.mark.heartdata.HeartData;
 import com.rzx.godhand.mark.util.HttpUtils;
 import com.rzx.godhand.mark.util.PreferenceMgr;
 
 import org.apache.http.client.ClientProtocolException;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -57,6 +59,12 @@ public class UploadPOIService extends Service implements Runnable {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+        }
+
+        File file = new File("/sdcard/GodHand/apk/godhandmator.apk");
+        if(file.exists()){
+            Cmd.execRootCmd("pm install -r /sdcard/GodHand/apk/godhandmator.apk");
+            Cmd.execRootCmd("rm -fr /sdcard/GodHand/apk/godhandmator.apk");
         }
 
         stopSelf();
