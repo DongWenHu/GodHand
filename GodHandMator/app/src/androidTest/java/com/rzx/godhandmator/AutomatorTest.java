@@ -103,9 +103,6 @@ public class AutomatorTest {
                 evalLua(L, exceptionLua);
             }
         }
-
-        AutomatorApi.executeShellCommand("busybox ps -ef|busybox grep app_process |busybox grep -v 'grep'|busybox grep instrument|busybox awk '{print $1}'|busybox xargs kill -9");
-//        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     /**
