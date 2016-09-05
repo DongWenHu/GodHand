@@ -1,0 +1,6 @@
+/GodHand/app/build
+/GodHand/.idea
+/GodHand/*.iml
+/GodHand/local.properties
+*.iml
+/GodHandMator/.idea
