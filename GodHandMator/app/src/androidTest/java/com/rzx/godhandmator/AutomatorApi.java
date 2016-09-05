@@ -30,6 +30,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
@@ -39,6 +40,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by Administrator on 2016/7/24/024.
@@ -754,6 +756,7 @@ public class AutomatorApi {
         executeShellCommand("ime enable com.rzx.godhandmator/.ime.RzxInputService");
         executeShellCommand("ime set com.rzx.godhandmator/.ime.RzxInputService");
         executeShellCommand("am startservice  -a android.view.InputMethod -n com.rzx.godhandmator/.ime.RzxInputService");
+        executeShellCommand("ime disable com.rzx.godhandmator/.ime.RzxInputService");
         return true;
     }
 
@@ -1267,6 +1270,49 @@ public class AutomatorApi {
     public static void notifyScanImageFile(String file){
         MediaScannerConnection.scanFile(context, new String[] { file }, null, null);
     }
+
+    ////////////////////////////////////////////////////////////
+    public static String getImei(String fileName) {
+        HashMap localHashMap1 = loadHashMapFromFile(fileName
+                + "/MicroMsg/systemInfo.cfg");
+        HashMap localHashMap2 = loadHashMapFromFile(fileName
+                + "/MicroMsg/CompatibleInfo.cfg");
+        return getIMEI(localHashMap1, localHashMap2);
+    }
+
+    public static HashMap loadHashMapFromFile(String paramString) {
+        try {
+            ObjectInputStream localObjectInputStream = new ObjectInputStream(
+                    new FileInputStream(paramString));
+            Object localObject = localObjectInputStream.readObject();
+            localObjectInputStream.close();
+            HashMap localHashMap = (HashMap) localObject;
+            return localHashMap;
+        } catch (Exception localException) {
+            localException.printStackTrace();
+        }
+        return null;
+    }
+
+    private static String getIMEI(HashMap paramHashMap1, HashMap paramHashMap2) {
+        String str;
+        try {
+            boolean bool = paramHashMap1.containsKey(Integer.valueOf(258));
+            str = null;
+            if (bool)
+                str = paramHashMap1.get(Integer.valueOf(258)).toString();
+            if ((str == null) || (str.length() == 0))
+                str = (String) paramHashMap2.get(Integer.valueOf(258));
+            if ((str == null) || (str.length() == 0))
+                throw new Exception();
+        } catch (Exception localException) {
+
+            localException.printStackTrace();
+            str = "";
+        }
+        return str;
+    }
+    ///////////////////////////////////////////////////////////
 }
 
 
