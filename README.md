@@ -21,3 +21,6 @@
   AutomatorApi:toast("任务执行结束")
   AutomatorApi:mSleep(2000)
 ```
+
+##日志
+>出错日志查看/mnt/sdcard/GodHand/log/system.log
