@@ -1,5 +1,6 @@
 # GodHand
-根据uiautomator框架实现类似按键精灵，触动精灵的程序，支持lua语言, 需root
+根据uiautomator框架实现类似按键精灵，触动精灵的程序，支持lua语言, 需root<br>
+只支持android4.4 以上版本.
 
 ##使用方法
 >1、编译程序，生成一个主apk(app\build\outputs\apk\app-debug.apk)和一个单元测试apk(app\build\outputs\apk\app-debug-androidTest-unaligned.apk).<br>
