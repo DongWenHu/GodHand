@@ -10,7 +10,7 @@
 
 <br>
 
-##Example
+## Example
 ```lua
   require 'import'
   import 'com.rzx.godhandmator.AutomatorApi'
@@ -22,5 +22,5 @@
   AutomatorApi:mSleep(2000)
 ```
 
-##日志
+## 日志
 >出错日志查看/mnt/sdcard/GodHand/log/system.log
